@@ -1,0 +1,204 @@
+import Localidad.*
+import Empresa.*
+import Usuario.*
+import Viaje.*
+import MedioDeTransporte.*
+import Perfil.*
+
+describe "Barrilete Cosmico" {
+
+// Localidades
+	const garlicsSea = new Playa(nombre = "Garlic´s Sea", equipajeImprescindible = #{ "Caña de Pescar", "Piloto" }, precio = 2500, kilometro = 0)
+	const silversSea = new Playa(nombre = "Silver´s Sea", equipajeImprescindible = #{ "Protector Solar", "Equipo de Buceo" }, precio = 1350, kilometro = 100)
+	const lastToninas = new Playa(nombre = "Last Toninas", equipajeImprescindible = #{ "Vacuna Gripal", "Vacuna B", "Necronomicon" }, precio = 3500, kilometro = 200)
+	const goodAirs = new CiudadHistorica(nombre = "Good Airs", equipajeImprescindible = #{ "Cerveza", "Protector Solar" }, precio = 1500, kilometro = 300, cantidadMuseos = 11)
+	const beaverHill = new Montania(nombre = "Beaver Hill", equipajeImprescindible = #{ "SnowBoard", "Campera de Nieve", "Vacuna" }, precio = 5000, kilometro = 3095, altura = 5001)
+// MediosDeTransporte 
+	const avion = new Avion(kilometrosPorHora = 900, nivelDeImpulsoAdicional = 10, cantidadDeTurbinas = 4)
+	const micro = new Micro(kilometrosPorHora = 90)
+	const tren = new Tren(kilometrosPorHora = 100)
+	const barco = new Barco(kilometrosPorHora = 50, probabilidadDeChocarse = 20)
+// Viajes 
+	const viajeALastToninas = new Viaje(localidadOrigen = goodAirs, localidadDestino = lastToninas, medioDeTransporte = micro)
+	const viajeAGoodAirs = new Viaje(localidadOrigen = lastToninas, localidadDestino = goodAirs, medioDeTransporte = barco)
+	const viajeAGarlicsSea = new Viaje(localidadOrigen = goodAirs, localidadDestino = garlicsSea, medioDeTransporte = tren)
+	const viajeASilversSea = new Viaje(localidadOrigen = goodAirs, localidadDestino = silversSea, medioDeTransporte = avion)
+	const viajeABeaverHill = new Viaje(localidadOrigen = goodAirs, localidadDestino = beaverHill, medioDeTransporte = avion)
+// Empresa
+	const barrileteCosmico = new Empresa(localidades = #{ garlicsSea, silversSea, lastToninas, goodAirs, beaverHill }, mediosDeTransporte = #{ micro, avion, tren, barco })
+// Usuario
+	const pHari = new Usuario(nombreUsuario = "PHari", viajesRealizados = #{ viajeALastToninas, viajeAGoodAirs }, plataDisponible = 9350, usuariosSeguidos = #{}, localidadDeOrigen = goodAirs, perfil = empresarial)
+	const laloLanda = new Usuario(nombreUsuario = "lLanda", viajesRealizados = #{ viajeAGoodAirs }, plataDisponible = 10000000, usuariosSeguidos = #{}, localidadDeOrigen = goodAirs, perfil = estudiantil)
+	const juan = new Usuario(nombreUsuario = "Juan", viajesRealizados = #{ viajeAGoodAirs }, plataDisponible = 503500, usuariosSeguidos = #{}, localidadDeOrigen = goodAirs, perfil = empresarial)
+	const maria = new Usuario(nombreUsuario = "Maria", viajesRealizados = #{ viajeAGoodAirs }, plataDisponible = 2001500, usuariosSeguidos = #{}, localidadDeOrigen = lastToninas, perfil = empresarial)
+	const jose = new Usuario(nombreUsuario = "Jose", viajesRealizados = #{ viajeAGoodAirs }, plataDisponible = 1112944.6, usuariosSeguidos = #{}, localidadDeOrigen = goodAirs, perfil = empresarial)
+
+// TESTS ENTREGA 1 (modificados para la entrega 2)
+	test "Obtener los destinos más importantes de Barrilete Cósmico" {
+		assert.equals(#{ garlicsSea, lastToninas, beaverHill }, barrileteCosmico.localidadesImportantes())
+	}
+
+	test "Aplicarle un 25% de descuento a Last Toninas y su precio cambia" {
+		lastToninas.aplicarDescuento(25)
+		assert.equals(2625, lastToninas.precio())
+	}
+
+	test "Aplicarle un 25% de descuento a Last Toninas y tiene al certificado de descuento como parte de su equipaje imprescindible" {
+		lastToninas.aplicarDescuento(25)
+		assert.that(lastToninas.equipajeImprescindible().contains("Certificado de descuento"))
+	}
+
+	test "Asegurar que Silver s Sea no sea un destino peligroso" {
+		assert.notThat(silversSea.soyPeligroso())
+	}
+
+	test "Aplicar un descuento del 15% a todos los destinos de Barrilete Cósmico y cambian los precios de sus destinos" {
+		barrileteCosmico.aplicarDescuentoALasLocalidades(15)
+		assert.equals(2125, garlicsSea.precio())
+		assert.equals(1147.5, silversSea.precio())
+		assert.equals(2975, lastToninas.precio())
+		assert.equals(1275, goodAirs.precio())
+	}
+
+	test "Aplicar un descuento del 15% a todos los destinos de Barrilete Cósmico y todos tienen su certificado de descuento" {
+		barrileteCosmico.aplicarDescuentoALasLocalidades(15)
+		assert.that(barrileteCosmico.localidades().all{ unaLocalidad => unaLocalidad.equipajeImprescindible().contains("Certificado de descuento")})
+	}
+
+	test "Obtener los destinos más peligrosos hasta el momento" {
+		assert.equals(#{ beaverHill }, barrileteCosmico.localidades().filter{ unDestino => unDestino.soyPeligroso()})
+	}
+
+	test "Saber si Barrilete Cósmico es una empresa extrema" {
+		assert.that(barrileteCosmico.soyExtrema())
+	}
+
+	test "Conocer la carta de destinos de Barrilete Cósmico" {
+		assert.equals(#{ garlicsSea, silversSea, lastToninas, goodAirs, beaverHill }, barrileteCosmico.localidades())
+	}
+
+	test "Obtener las millas de PHari, que realizao dos viajes, uno de good airs a las toninas y la vuelta de las toninas a good airs" {
+		assert.equals(200, pHari.kilometrosDelUsuario())
+	}
+
+	test "Hacer que PHari vuele a Silver s Sea y se agregue a sus destinos conocidos" {
+		pHari.viajar(viajeASilversSea)
+		assert.equals(#{ viajeALastToninas, viajeAGoodAirs, viajeASilversSea }, pHari.viajesRealizados())
+	}
+
+	test "Hacer que PHari vuele a Silver s Sea y se descuente el precio de su cuenta, con el valor del transporte ya adicionado" {
+		pHari.viajar(viajeASilversSea)
+		assert.equals(0, pHari.plataDisponible())
+	}
+
+// TESTS ENTREGA 2 
+	test "El valor por los kilometros recorridos de un viaje en avion de 300 km sea $12000" {
+		assert.equals(12000, avion.precioDelTransporte(300))
+	}
+
+	test "El valor por los kilometros recorridos de un viaje en micrro de 300 km sea $150" {
+		assert.equals(1500000, micro.precioDelTransporte(300))
+	}
+
+	test "La distancia de good airs a garlics Sea es de 300km" {
+		assert.equals(300, goodAirs.distanciaA(garlicsSea))
+	}
+
+	test "Phari no puede viajar de su ciudad de origen a su ciudad de origen. Debe lanzar excepcion" {
+		assert.throwsExceptionWithMessage("El destino coincide con la localidad de origen", { barrileteCosmico.armarViaje(pHari, goodAirs)})
+	}
+
+	test "pHari conoce su localidad de origen" {
+		assert.equals(goodAirs, pHari.localidadDeOrigen())
+	}
+
+	test "Hacer que PHari vuele a Silver s Sea y se cambie la localidad de origen" {
+		pHari.viajar(viajeASilversSea)
+		assert.equals(silversSea, pHari.localidadDeOrigen())
+	}
+
+	test "lalo landa sigue a phari, y este se agrega a sus usuarios seguidos" {
+		laloLanda.seguirUsuario(pHari)
+		assert.equals(#{ pHari }, laloLanda.usuariosSeguidos())
+	}
+
+	test "lalo landa sigue a phari y este le devuelve el follow" {
+		laloLanda.seguirUsuario(pHari)
+		assert.equals(#{ laloLanda }, pHari.usuariosSeguidos())
+	}
+
+	test "lalo landa viaja a garlicsSea en avion y se le descuenta correctamente el valor del viaje mas la tarifa del tren" {
+		laloLanda.viajar(viajeAGarlicsSea)
+		assert.equals(8887055.4, laloLanda.plataDisponible())
+	}
+
+	test "lalo landa viaja a garlicsSea en avion y se modifica su ciudad de origen" {
+		laloLanda.viajar(viajeAGarlicsSea)
+		assert.equals(garlicsSea, laloLanda.localidadDeOrigen())
+	}
+
+	test "Barrilete cosmico le arma un viaje a pHari y la ciudad de origen es correcta" {
+		assert.equals(goodAirs, barrileteCosmico.armarViaje(pHari, garlicsSea).localidadOrigen())
+	}
+
+	test "Barrilete cosmico le arma un viaje a pHari y la ciudad de destino es correcta" {
+		assert.equals(garlicsSea, barrileteCosmico.armarViaje(pHari, garlicsSea).localidadDestino())
+	}
+
+	// TEST ENTREGA 3
+	test "El precio del viaje a Silvers Sea es de $9350" {
+		pHari.plataDisponible(9350)
+		pHari.viajar(viajeASilversSea)
+		assert.equals(0, pHari.plataDisponible())
+	}
+
+	test "phari puede viajar a beaverHill y se le descuenta el dinero por el viaje" {
+		pHari.plataDisponible(116800)
+		pHari.viajar(viajeABeaverHill)
+		assert.equals(0, pHari.plataDisponible())
+	}
+
+	test "phari viaja a beaverHill y  su ciudad de origen cambia a esta" {
+		pHari.plataDisponible(116800)
+		pHari.viajar(viajeABeaverHill)
+		assert.equals(beaverHill, pHari.localidadDeOrigen())
+	}
+
+	test "Pablo Harí no puede pagar el viaje a Garlics Sea" {
+		assert.throwsExceptionWithMessage("No me alcanza para pagar el viaje", { pHari.viajar(barrileteCosmico.armarViaje(pHari, garlicsSea))})
+	}
+
+	test "El estudiante elige el transporte mas rapido dentro de su presupuesto cuando viaja a Garlic Sea" {
+		assert.equals(avion, (barrileteCosmico.armarViaje(laloLanda, garlicsSea)).medioDeTransporte())
+	}
+
+	test "PHari, con su perfil empresarial, arma un viaje desde Good Airs hasta Garlic Sea y el medio de transporte es un avion" {
+		pHari.plataDisponible(1000000)
+		assert.equals(avion, (barrileteCosmico.armarViaje(pHari, garlicsSea)).medioDeTransporte())
+	}
+
+	test "El precio del viaje a Silvers Sea es de $503500" {
+		juan.viajar(viajeALastToninas)
+		assert.equals(0, juan.plataDisponible())
+	}
+
+	test "El precio del viaje a Silvers Sea es de $2001500" {
+		maria.viajar(viajeAGoodAirs)
+		assert.equals(0, maria.plataDisponible())
+	}
+
+	test "El precio del viaje a Silvers Sea es de $1112944.6" {
+		jose.viajar(viajeAGarlicsSea)
+		assert.equals(0, jose.plataDisponible())
+	}
+
+	test "Good Airs no es una localidad destacada ya que tiene mas de dos museos, pero su precio es menor a 2000" {
+		assert.notThat(goodAirs.soyDestacado())
+	}
+
+	test "Beaver Hill al ser una montaña es un destino destacado " {
+		assert.that(beaverHill.soyDestacado())
+	}
+
+}
+
